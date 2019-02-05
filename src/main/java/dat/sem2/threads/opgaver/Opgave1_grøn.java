@@ -13,13 +13,14 @@ import java.util.concurrent.Executors;
  * @author Christian Ambjørn Kehr
  */
 public class Opgave1_grøn {
-    
-     public static void main( String[] args ) {
+
+    public static void main( String[] args ) throws InterruptedException {
         //ExecutorService workingJack = Executors.newSingleThreadExecutor();
         ExecutorService workingJack = Executors.newFixedThreadPool(4);
         System.out.println( "Main starts" );
-        for ( int count = 0; count < 25; count++ ) {
-            Runnable task = new MyTask( count );
+        for ( int i = 0; i <= 25; i++ ) {
+            Runnable task = new MyTask( i );
+            Thread.sleep(250);
             workingJack.submit( task );
         }
         System.out.println( "Main is done" );
@@ -29,7 +30,7 @@ public class Opgave1_grøn {
 }
 
 class MyTask implements Runnable {
-    private String a = "a";
+
     private int count = 0;
 
     MyTask( int cnt ) {
@@ -38,10 +39,9 @@ class MyTask implements Runnable {
 
     @Override
     public synchronized void run() {
-       
-        
-        System.out.println( "Task: " + count);
-       
+        System.out.print((char) ('A' + count));
+        System.out.print((char) ('A' + count));
+        System.out.println((char) ('A' + count));
     }
 }
 
