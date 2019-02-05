@@ -39,9 +39,7 @@ class MyTask implements Runnable {
 
     @Override
     public synchronized void run() {
-        System.out.print((char) ('A' + count));
-        System.out.print((char) ('A' + count));
-        System.out.println((char) ('A' + count));
+        System.out.println("Task: - " + String.valueOf((char) (count + 65)) + String.valueOf((char) (count + 65)) + String.valueOf((char) (count + 65)));
     }
 }
 
