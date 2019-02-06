@@ -21,6 +21,7 @@ public class Opgave1_grøn {
         for (int i = 0; i <= 25; i++) {
             Runnable task = new MyTask(i);
             Thread.sleep(250);
+            // Thread.sleep() er no go!
             workingJack.submit(task);
         }
         System.out.println("Main is done");
