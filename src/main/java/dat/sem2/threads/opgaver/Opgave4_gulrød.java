@@ -16,7 +16,7 @@ public class Opgave4_gulrød {
     
     public static void main( String[] args ) {
         //ExecutorService workingJack = Executors.newSingleThreadExecutor();
-        ExecutorService workingJack = Executors.newFixedThreadPool( 4);
+        ExecutorService workingJack = Executors.newFixedThreadPool( 8);
         System.out.println( "Main starts" );
         for ( int count = 0; count < 25; count++ ) {
             Runnable task = new MyTask2( count );
@@ -39,20 +39,20 @@ class MyTask2 implements Runnable {
     @Override
     public synchronized void run() {
         long startTime = System.currentTimeMillis();
-        try {
+       // try {
             // Loop for the given duration
             long currentTime = System.currentTimeMillis();
             while ((currentTime - startTime) < 100000) {
                 // Every 100ms, sleep for the percentage of unladen time
-                if ((currentTime % 100) == 0) {
-                    Thread.sleep(0);
-                }
+                //if ((currentTime % 100) == 0) {
+                  //  Thread.sleep(0);
+                //}
                 currentTime = System.currentTimeMillis();
                 System.out.println( "Task: " + count );
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         
     }
 }
