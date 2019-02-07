@@ -7,15 +7,19 @@ package Opgaver_Fredag;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URL;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -25,10 +29,10 @@ public class Opgave3_rød {
     
 
     public static void main(String[] args) throws Exception {
-        picoServer02(8080);
+//        picoServer02(8080);
 //        picoServer04();
 //        picoServer05();
-//        picoServer06();
+        picoServer06();
     }
 
     /*
@@ -175,45 +179,72 @@ public class Opgave3_rød {
     names is assumed to be a name of a service.
      */
     private static void picoServer06() throws Exception {
-        final ServerSocket server = new ServerSocket(8080);
-        System.out.println("Listening for connection on port 8080 ....");
-        String root = "pages";
-        int count = 0;
-        while (true) { // keep listening (as is normal for a server)
-            Socket socket = server.accept();;
-            try {
-                System.out.println("---- reqno: " + (++count) + " ----");
-                HttpRequest req = new HttpRequest(socket.getInputStream());
-                String path = req.getPath();
-                if (path.endsWith(".html") || path.endsWith(".txt")) {
-                    String html = getResourceFileContents(root + path);
-                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
-                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-                } else {
-                    String res = "";
-                    switch (path) {
-                        case "/addournumbers":
-                            res = addOurNumbers(req);
-                            break;
-                        case "/multiplyOurNumbers":
-                            res = multiplyOurNumbers(req);
-                            break;
-                        default:
-                            res = "Unknown path: " + path;
+        ExecutorService serverProcessingPool = Executors.newFixedThreadPool(8);
+        
+        Runnable serverTask = new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    final ServerSocket server = new ServerSocket(8080);
+                    System.out.println("Listening for connection on port 8080 ....");
+                    while (true) {
+                        Socket socket = server.accept();
+                        serverProcessingPool.submit(new ServerTask(socket));
                     }
-                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
-                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-                }
-            } catch (Exception ex) {
-                String httpResponse = "HTTP/1.1 500 Internal error\r\n\r\n"
-                        + "UUUUPS: " + ex.getLocalizedMessage();
-                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-            } finally {
-                if (socket != null) {
-                    socket.close();
+
+                } catch (IOException e) {
+                    System.err.println("Unable to process client request");
+                    e.printStackTrace();
                 }
             }
-        }
+        };
+        Thread serverThread = new Thread(serverTask);
+        serverThread.start();
+        
+        
+
+                
+                
+                
+                
+                
+//          final ServerSocket server = new ServerSocket(8080);
+//        String root = "pages";
+//        while (true) { // keep listening (as is normal for a server)
+//        int count = 0;
+//            try {
+//                System.out.println("---- reqno: " + (++count) + " ----");
+//                HttpRequest req = new HttpRequest(socket.getInputStream());
+//                String path = req.getPath();
+//                if (path.endsWith(".html") || path.endsWith(".txt")) {
+//                    String html = getResourceFileContents(root + path);
+//                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
+//                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+//                } else {
+//                    String res = "";
+//                    switch (path) {
+//                        case "/addournumbers":
+//                            res = addOurNumbers(req);
+//                            break;
+//                        case "/multiplyOurNumbers":
+//                            res = multiplyOurNumbers(req);
+//                            break;
+//                        default:
+//                            res = "Unknown path: " + path;
+//                    }
+//                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
+//                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+//                }
+//            } catch (Exception ex) {
+//                String httpResponse = "HTTP/1.1 500 Internal error\r\n\r\n"
+//                        + "UUUUPS: " + ex.getLocalizedMessage();
+//                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+//            } finally {
+//                if (socket != null) {
+//                    socket.close();
+//                }
+//            }
+//        }
 //        System.out.println( getFile("adding.html") );
     }
 
@@ -273,4 +304,27 @@ public class Opgave3_rød {
             + "    </body>\n"
             + "</html>\n";
 
+}
+
+class ServerTask implements Runnable {
+
+    private final Socket socket;
+
+    ServerTask(Socket socket) {
+        this.socket = socket;
+    }
+
+    @Override
+    public void run() {
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                System.out.println(line);
+            }
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

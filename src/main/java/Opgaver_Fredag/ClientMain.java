@@ -6,10 +6,15 @@
 package Opgaver_Fredag;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -51,15 +56,20 @@ public class ClientMain {
     }
     
     private static void picoClient03() throws Exception {
-        String hostName = "itu.dk";
-        int portNumber = 7;
-        String message = "Hello 2. semester\r\n";
+        String hostName = "localhost";
+        int portNumber = 8080;
         try {
             System.out.println( "Connect to: " + hostName + ":" + portNumber );
             Socket mySocket = new Socket( hostName, portNumber );
-            sendMessagePrintResult( mySocket, message );
-            // Send message to server
-            // print response
+            
+            ExecutorService clientJack = Executors.newFixedThreadPool( 8);
+            System.out.println( "Main starts" );
+            for (int count = 0; count < 25; count++) {
+                Runnable task = new ClientTask(count);
+                clientJack.submit(task);
+            }
+            System.out.println("Main is done");
+            clientJack.shutdown();
         } catch ( Exception ex ) {
             System.out.println( "Uuups: " + ex.getLocalizedMessage() );
         }
@@ -78,5 +88,40 @@ public class ClientMain {
             System.out.println( line );
         }
     }
-
 }
+    
+    class ClientTask implements Runnable {
+        
+        private int count = 0;
+        
+        ClientTask (int cnt ) {
+            count = cnt;
+        }
+        
+        
+        @Override
+        public void run() {
+            try {
+                Socket mySocket = new Socket("localhost", 8080);
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(mySocket.getOutputStream()));
+                
+                System.out.println("ClientTask sent: Task: " + count);
+                out.write("Task: " + count);
+                out.newLine();
+                out.flush();
+                
+                Thread.sleep(200);
+                
+            } catch (UnknownHostException e){
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            
+            
+        }
+    }
+
+
