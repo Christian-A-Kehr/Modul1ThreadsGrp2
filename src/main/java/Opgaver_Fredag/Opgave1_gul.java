@@ -58,47 +58,58 @@ public class Opgave1_gul {
     }
 
     public static void makeResponse(int count, Socket socket, String root, ExecutorService worker) throws IOException {
-        try {
-            System.out.println("---- reqno: " + (++count) + " ----");
-            HttpRequest req = new HttpRequest(socket.getInputStream());
-            String path = req.getPath();
-            if (path.endsWith(".html") || path.endsWith(".txt")) {
-                String html = getResourceFileContents(root + path);
-                String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
-                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-            } else {
-                String res = "";
-                switch (path) {
-                    case "/addournumbers":
-                        worker.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
+        System.out.println("---- reqno: " + (++count) + " ----");
+        worker.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
 
-                                    String res = addOurNumbers(req);
-                                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
-                                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-                                    socket.close();
-                                } catch (Exception ex) {
-                                    Logger.getLogger(Opgave1_gul.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        }); //evt lav egen klasse
-                        break;
-                    case "/multiplyOurNumbers":
-                        res = multiplyOurNumbers(req);
-                        break;
-                    default:
-                        res = "Unknown path: " + path;
-                }
+                    HttpRequest req = new HttpRequest(socket.getInputStream());
+                    String path = req.getPath();
+                    if (path.endsWith(".html") || path.endsWith(".txt")) {
+                        String html = getResourceFileContents(root + path);
+                        String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
+                        socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                    } else {
+                        String res = "";
+                        switch (path) {
+                            case "/addournumbers":
+                                worker.submit(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+
+                                            String res = addOurNumbers(req);
+                                            String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
+                                            socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                                            socket.close();
+                                        } catch (Exception ex) {
+                                            Logger.getLogger(Opgave1_gul.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
+                                    }
+                                }); //evt lav egen klasse
+                                break;
+                            case "/multiplyOurNumbers":
+                                res = multiplyOurNumbers(req);
+                                break;
+                            default:
+                                res = "Unknown path: " + path;
+                        }
 //                String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
 //                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                    }
+                } catch (Exception ex) {
+                    String httpResponse = "HTTP/1.1 500 Internal error\r\n\r\n"
+                            + "UUUUPS: " + ex.getLocalizedMessage();
+                    try {
+                        socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                    } catch (IOException ex1) {
+                        Logger.getLogger(Opgave1_gul.class.getName()).log(Level.SEVERE, null, ex1);
+                    }
+                }
             }
-        } catch (Exception ex) {
-            String httpResponse = "HTTP/1.1 500 Internal error\r\n\r\n"
-                    + "UUUUPS: " + ex.getLocalizedMessage();
-            socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-        }
+        });
+        
     }
 
     /*
