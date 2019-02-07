@@ -30,6 +30,7 @@ public class Opgave2_gulRød {
 
     public static void main(String[] args) throws Exception {
         picoServer06();
+        // version 1
     }
 
     private static void picoServer06() throws Exception {
