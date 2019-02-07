@@ -45,6 +45,7 @@ public class Opgave1_gul {
                 @Override
                 public void run() {
                     try {
+                        // test 1
                         makeResponse(socket, root, worker);
                     } catch (IOException ex) {
                         Logger.getLogger(Opgave1_gul.class.getName()).log(Level.SEVERE, null, ex);
