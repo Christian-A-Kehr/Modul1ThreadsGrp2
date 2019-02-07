@@ -103,12 +103,14 @@ public class ClientMain {
         public void run() {
             try {
                 Socket mySocket = new Socket("localhost", 8080);
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(mySocket.getOutputStream()));
+                PrintWriter out = new PrintWriter(new OutputStreamWriter(mySocket.getOutputStream()));
                 
                 System.out.println("ClientTask sent: Task: " + count);
-                out.write("Task: " + count);
-                out.newLine();
+                out.println("Task: " + count );
                 out.flush();
+                out.close();
+                
+                mySocket.close();
                 
                 Thread.sleep(200);
                 

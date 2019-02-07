@@ -179,7 +179,7 @@ public class Opgave3_rød {
     names is assumed to be a name of a service.
      */
     private static void picoServer06() throws Exception {
-        ExecutorService serverProcessingPool = Executors.newFixedThreadPool(8);
+        ExecutorService serverProcessingPool = Executors.newFixedThreadPool(32);
         
         Runnable serverTask = new Runnable() {
             @Override
