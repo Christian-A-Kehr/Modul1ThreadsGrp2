@@ -156,3 +156,4 @@ public class Opgave1_gul {
             + "        <a href=\"adding.html\">Læg to andre tal sammen</a>\n"
             + "    </body>\n"
             + "</html>\n";
+}
