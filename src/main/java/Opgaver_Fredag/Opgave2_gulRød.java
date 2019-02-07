@@ -48,7 +48,7 @@ public class Opgave2_gulRød {
                         // test 1
                         makeResponse(count, socket, root, worker);
                     } catch (IOException ex) {
-                        Logger.getLogger(Opgave1_gul.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(Opgave2_gulRød.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             });
