@@ -46,70 +46,59 @@ public class Opgave1_gul {
                 public void run() {
                     try {
                         // test 1
-                        makeResponse(socket, root, worker);
+                        makeResponse(count, socket, root, worker);
                     } catch (IOException ex) {
                         Logger.getLogger(Opgave1_gul.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            }); 
-                    
-            try {
-                System.out.println("---- reqno: " + (++count) + " ----");
-                HttpRequest req = new HttpRequest(socket.getInputStream());
-                String path = req.getPath();
-                if (path.endsWith(".html") || path.endsWith(".txt")) {
-                    String html = getResourceFileContents(root + path);
-                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
-                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-                } else {
-                    String res = "";
-                    switch (path) {
-                        case "/addournumbers":
-                            res = addOurNumbers(req);
-                            worker.submit(res); //evt lav egen klasse 
-                            break;
-                        case "/multiplyOurNumbers":
-                            res = multiplyOurNumbers(req);
-                            break;
-                        default:
-                            res = "Unknown path: " + path;
-                    }
-                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
-                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-                }
-            } catch (Exception ex) {
-                String httpResponse = "HTTP/1.1 500 Internal error\r\n\r\n"
-                        + "UUUUPS: " + ex.getLocalizedMessage();
-                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-            } finally {
-                if (socket != null) {
-                    socket.close();
-                }
-            }
+            });
+
         }
 //        System.out.println( getFile("adding.html") );
     }
 
-    public static void makeResponse(Socket socket, String root, ExecutorService worker) throws IOException {
+    public static void makeResponse(int count, Socket socket, String root, ExecutorService worker) throws IOException {
         try {
-            System.out.println("-----------------");
+            System.out.println("---- reqno: " + (++count) + " ----");
             HttpRequest req = new HttpRequest(socket.getInputStream());
-            String path = root + req.getPath();
-            String html = getResourceFileContents(path);
-            String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
-            socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-            System.out.println("<<<<<<<<<<<<<<<<<");
+            String path = req.getPath();
+            if (path.endsWith(".html") || path.endsWith(".txt")) {
+                String html = getResourceFileContents(root + path);
+                String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
+                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+            } else {
+                String res = "";
+                switch (path) {
+                    case "/addournumbers":
+                        worker.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+
+                                    String res = addOurNumbers(req);
+                                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
+                                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                                    socket.close();
+                                } catch (Exception ex) {
+                                    Logger.getLogger(Opgave1_gul.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }); //evt lav egen klasse
+                        break;
+                    case "/multiplyOurNumbers":
+                        res = multiplyOurNumbers(req);
+                        break;
+                    default:
+                        res = "Unknown path: " + path;
+                }
+//                String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
+//                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+            }
         } catch (Exception ex) {
             String httpResponse = "HTTP/1.1 500 Internal error\r\n\r\n"
                     + "UUUUPS: " + ex.getLocalizedMessage();
             socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-        } finally {
-            if (socket != null) {
-                socket.close();
-            }
-            
         }
-        
     }
 
     /*
@@ -167,20 +156,5 @@ public class Opgave1_gul {
             + "        <a href=\"adding.html\">Læg to andre tal sammen</a>\n"
             + "    </body>\n"
             + "</html>\n";
-
-    private static class myTask implements Runnable {
-
-        public myTask() {
-        }
-
-        private myTask(Socket socket, String root) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void run() {
-            makeResponse(socket, RES);
-        }
-    }
 
 }
