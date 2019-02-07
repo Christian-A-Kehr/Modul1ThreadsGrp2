@@ -19,6 +19,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,66 +40,65 @@ public class Opgave2_gulRød {
         ExecutorService worker = Executors.newFixedThreadPool(4);
 
         while (true) { // keep listening (as is normal for a server)
-            Socket socket = server.accept();;
-            worker.submit(makeResponse(socket, root)); // hvorfor skal den retunere noget!? 
-            //worker.submit(new Runnable()) 
-                    
-            try {
-                System.out.println("---- reqno: " + (++count) + " ----");
-                HttpRequest req = new HttpRequest(socket.getInputStream());
-                String path = req.getPath();
-                if (path.endsWith(".html") || path.endsWith(".txt")) {
-                    String html = getResourceFileContents(root + path);
-                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
-                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-                } else {
-                    String res = "";
-                    switch (path) {
-                        case "/addournumbers":
-                            res = addOurNumbers(req);
-                            break;
-                        case "/multiplyOurNumbers":
-                            res = multiplyOurNumbers(req);
-                            break;
-                        default:
-                            res = "Unknown path: " + path;
+            Socket socket = server.accept();
+            worker.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        // test 1
+                        makeResponse(count, socket, root, worker);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Opgave2_gulRød.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
-                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
                 }
-            } catch (Exception ex) {
-                String httpResponse = "HTTP/1.1 500 Internal error\r\n\r\n"
-                        + "UUUUPS: " + ex.getLocalizedMessage();
-                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-            } finally {
-                if (socket != null) {
-                    socket.close();
-                }
-            }
+            });
+
         }
 //        System.out.println( getFile("adding.html") );
     }
 
-    public static void makeResponse(Socket socket, String root) throws IOException {
+    public static void makeResponse(int count, Socket socket, String root, ExecutorService worker) throws IOException {
         try {
-            System.out.println("-----------------");
+            System.out.println("---- reqno: " + (++count) + " ----");
             HttpRequest req = new HttpRequest(socket.getInputStream());
-            String path = root + req.getPath();
-            String html = getResourceFileContents(path);
-            String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
-            socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-            System.out.println("<<<<<<<<<<<<<<<<<");
+            String path = req.getPath();
+            if (path.endsWith(".html") || path.endsWith(".txt")) {
+                String html = getResourceFileContents(root + path);
+                String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + html;
+                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+            } else {
+                String res = "";
+                switch (path) {
+                    case "/addournumbers":
+                        worker.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+
+                                    String res = addOurNumbers(req);
+                                    String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
+                                    socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+                                    socket.close();
+                                } catch (Exception ex) {
+                                    Logger.getLogger(Opgave2_gulRød.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }); //evt lav egen klasse
+                        break;
+                    case "/multiplyOurNumbers":
+                        res = multiplyOurNumbers(req);
+                        break;
+                    default:
+                        res = "Unknown path: " + path;
+                }
+//                String httpResponse = "HTTP/1.1 200 OK\r\n\r\n" + res;
+//                socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
+            }
         } catch (Exception ex) {
             String httpResponse = "HTTP/1.1 500 Internal error\r\n\r\n"
                     + "UUUUPS: " + ex.getLocalizedMessage();
             socket.getOutputStream().write(httpResponse.getBytes("UTF-8"));
-        } finally {
-            if (socket != null) {
-                socket.close();
-            }
-            
         }
-        
     }
 
     /*
