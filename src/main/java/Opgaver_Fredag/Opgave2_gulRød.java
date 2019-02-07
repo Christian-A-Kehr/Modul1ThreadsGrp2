@@ -128,7 +128,7 @@ public class Opgave2_gulRød {
         return content;
 
     }
-
+        //hentet fra tidligere uges opgaver
     private static String addOurNumbers(HttpRequest req) throws Exception {
         String first = req.getParameter("firstnumber");
         String second = req.getParameter("secondnumber");
