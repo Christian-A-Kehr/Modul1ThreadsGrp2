@@ -65,7 +65,7 @@ public class Opgave1_gul {
                     switch (path) {
                         case "/addournumbers":
                             res = addOurNumbers(req);
-                            worker.submit(task)
+                            worker.submit(res); //evt lav egen klasse 
                             break;
                         case "/multiplyOurNumbers":
                             res = multiplyOurNumbers(req);
