@@ -19,6 +19,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,9 +40,17 @@ public class Opgave1_gul {
         ExecutorService worker = Executors.newFixedThreadPool(4);
 
         while (true) { // keep listening (as is normal for a server)
-            Socket socket = server.accept();;
-            worker.submit(makeResponse(socket, root)); // hvorfor skal den retunere noget!? 
-            //worker.submit(new Runnable()) 
+            Socket socket = server.accept();
+            worker.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        makeResponse(socket, root, worker);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Opgave1_gul.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }); 
                     
             try {
                 System.out.println("---- reqno: " + (++count) + " ----");
@@ -55,6 +65,7 @@ public class Opgave1_gul {
                     switch (path) {
                         case "/addournumbers":
                             res = addOurNumbers(req);
+                            worker.submit(task)
                             break;
                         case "/multiplyOurNumbers":
                             res = multiplyOurNumbers(req);
@@ -78,7 +89,7 @@ public class Opgave1_gul {
 //        System.out.println( getFile("adding.html") );
     }
 
-    public static void makeResponse(Socket socket, String root) throws IOException {
+    public static void makeResponse(Socket socket, String root, ExecutorService worker) throws IOException {
         try {
             System.out.println("-----------------");
             HttpRequest req = new HttpRequest(socket.getInputStream());
@@ -155,5 +166,20 @@ public class Opgave1_gul {
             + "        <a href=\"adding.html\">Læg to andre tal sammen</a>\n"
             + "    </body>\n"
             + "</html>\n";
+
+    private static class myTask implements Runnable {
+
+        public myTask() {
+        }
+
+        private myTask(Socket socket, String root) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void run() {
+            makeResponse(socket, RES);
+        }
+    }
 
 }
