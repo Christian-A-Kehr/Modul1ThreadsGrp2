@@ -56,7 +56,7 @@ public class ClientMain {
     }
     
     private static void picoClient03() throws Exception {
-        String hostName = "localhost";
+        String hostName = "10.50.130.115";
         int portNumber = 8080;
         try {
             System.out.println( "Connect to: " + hostName + ":" + portNumber );
