@@ -65,7 +65,7 @@ public class ClientMain {
             ExecutorService clientJack = Executors.newFixedThreadPool( 8);
             System.out.println( "Main starts" );
             for (int count = 0; count < 25; count++) {
-                Runnable task = new ClientTask(count);
+                Runnable task = new ClientTask(count, hostName);
                 clientJack.submit(task);
             }
             System.out.println("Main is done");
@@ -93,34 +93,37 @@ public class ClientMain {
     class ClientTask implements Runnable {
         
         private int count = 0;
+        private String hostName; 
         
-        ClientTask (int cnt ) {
+        ClientTask (int cnt, String hostName ) {
             count = cnt;
+            this.hostName = hostName;
         }
         
         
         @Override
         public void run() {
             try {
-                Socket mySocket = new Socket("localhost", 8080);
+                Socket mySocket = new Socket(hostName, 8080);
                 PrintWriter out = new PrintWriter(new OutputStreamWriter(mySocket.getOutputStream()));
                 
                 System.out.println("ClientTask sent: Task: " + count);
                 out.println("Task: " + count );
+                // uddyb flush og close tak. 
                 out.flush();
                 out.close();
                 
                 mySocket.close();
                 
-                Thread.sleep(200);
+                //Thread.sleep(200);
                 
             } catch (UnknownHostException e){
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (InterruptedException e) {
+            } /*catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
             
             
         }

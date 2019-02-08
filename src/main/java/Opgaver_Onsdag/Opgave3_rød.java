@@ -48,7 +48,7 @@ class MyTask5 implements Runnable {
 
     public static void showList() {
         for (int i : list) {
-            System.out.println("List element: " + i);
+           System.out.println("List element: " + i);
         }
     }
 
